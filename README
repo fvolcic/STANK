@@ -1,0 +1,6 @@
+Implementation of the STANK programming language.
+
+Why STANK? (ST)ack based L(AN)guage that suc(K)s
+
+I do not recommend torturing yourself by trying to use STANK. Unless you want to write a STANK
+compiler in STANK to make the language self-hosted. That would be nice.

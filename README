@@ -19,3 +19,9 @@ SELFSTANK - make STANK self hosted by making STANK compilable then a compiler fo
 
 OTHER:
 language kinda trash. If you need to use a stack based language for whatever reason, just use C and make a statically allocated array and an index. Or C++.
+
+The python interpreter is incredibly slow as of now. 
+(If you are just messing around, it will seem super fast),
+but anything that requires actual computation will be incredibly slow.
+This is because I made negative effort in actually making the inerpreter
+actually good. It works, just uses a lot of string comparisons. 

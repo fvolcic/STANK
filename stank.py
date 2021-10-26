@@ -99,7 +99,7 @@ def tokenize(filename):
                     token = line[token_start:token_end]
 
                     # read numbers onto the stack
-                    if token.isnumeric():
+                    if token.isnumeric() or token[1:].isnumeric():
                         try:
                             tokens.append(int(token))
                         except ValueError:
@@ -155,6 +155,17 @@ class Program:
             index -= 1
         return index
 
+    # index must point to end index
+    def find_op_index_from_end(self, index):
+        count = 0
+        index -= 1
+        while(count > 0 or (self.program[index] != "where" and self.program[index] != "if")):
+            if(self.program[index] == "end"):
+                count += 1
+            if(self.program[index] == "if" or self.program[index] == "while"):
+                count -= 1
+        return index           
+
     def update_ip(self):
         instr = self.program[self.ip]
         
@@ -179,6 +190,29 @@ class Program:
                 self.ip = self.find_while_index(self.ip)
                 return    
 
+        elif(instr == "goto"):
+            where = self.stack.pop()
+            if(where == 0):
+                return
+            if(where > 0):
+                for _ in range(where):
+                    if(self.program[self.ip] == "if" or self.program[self.ip] == "where"):
+                        self.op_stack.push(self.program[self.ip])
+                    elif(self.program[self.ip] == "end"):
+                        self.op_stack.pop()
+
+                    self.ip += 1
+                return
+            if(where < 0):
+                for _ in range(abs(where)):
+                    if(self.program[self.ip] == "end"):
+                        op_index = self.find_op_index_from_end(self.ip)
+                        self.op_stack.push(self.program[op_index])
+                    if(self.program[self.ip] in ["where", "if"]):
+                        self.op_stack.pop()
+                    self.ip -= 1
+                return
+
         else:
             self.ip += 1
         
@@ -201,6 +235,10 @@ class Program:
                 else:
                     print(chr(val), end='')
 
+            self.update_ip()
+            return
+
+        if(instr == "goto"):
             self.update_ip()
             return
 
@@ -286,11 +324,7 @@ class Program:
         if(instr == "end"):
             self.update_ip()
             return
-        
-        if(instr == "goto"):
-            self.update_ip()
-            return
-        
+                
         if(instr == "elif"):
             self.update_ip()
             return
@@ -329,7 +363,7 @@ import click
 @click.command()
 @click.argument('filename')
 def main(filename):
-    p = Program(tokenize(filename))
+    p = Program(tokenize(filename), 10)
     while(1):
         # print(p.stack.stack[:p.stack.size()])
         p.run_instruction()

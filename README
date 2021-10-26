@@ -25,3 +25,6 @@ The python interpreter is incredibly slow as of now.
 but anything that requires actual computation will be incredibly slow.
 This is because I made negative effort in actually making the inerpreter
 actually good. It works, just uses a lot of string comparisons. 
+
+You can see how much faster C or Python is than STANK.
+Do this by compiling fib.c, and then running this, fib.py, and fib.stanky

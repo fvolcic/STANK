@@ -1,5 +1,3 @@
-# Computes the first 100 fibonacci numbers
-# This solution the bottom-up DP to compute numbers
 0 1 1
 while 3 copy2top dup 100 > do
 1 + 4 nswap pop

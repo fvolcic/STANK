@@ -1,0 +1,14 @@
+10 'Welcome to STANK!' 1 + print
+10 1 print
+10 'Here is some language documentation' 1 + print
+10 1 print
+10 'pop - remove the top element of the stack (ab -- a)' 1 + print
+10 'dup - duplicate the top element of the stack (ab -- abb)' 1 + print
+10 'n rot - rotate the n topmost stack elements. Ex. 3 rot (abc -- cab)' 1 + print
+10 'swap - swap top two stack elements. (ab - ba)' 1 + print
+10 'n print - print the n topmost stack elements. If 1000 is seen on the stack, print next value as a number' 1 + print
+10 '(<)(>)(<=)(>=)(==) - Compare top two stack elements. (top-elt) (op) (second-top-elt)' 1 + print
+10 '(+)(-)(*)(/)(%) - Apply operator to top two stack elements. (top-elt) (op) (second-top-elt)' 1 + print
+10 1 print
+10 'Have fun being STANKY!' 1 + print
+exit

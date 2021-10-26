@@ -1,7 +1,1 @@
-while 0 < dup dup dup do 
-end
-'this is a test'r
-'this is another test' 
-'hello there'
-1 2 + 5 6 * +
-exit
+'this language sucks' print exit

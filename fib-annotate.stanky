@@ -1,0 +1,23 @@
+# Computes the first 100 fibonacci numbers
+# This solution the bottom-up DP to compute numbers
+# This program explains how the actual program works
+
+0 1 1 # Load 0, 1, 1 onto the stack. 0 counts which fibonacci number we are on. The next two are the base case
+
+while 3 copy2top dup 100 > do   # While the index < 100
+                                # This works by copying the bottom number to the top
+                                # of the stack, duplicating the number, then comparing the number to 100
+
+1 + 4 nswap pop                 # This line adds 1 to the index, then puts it back at the start of the
+                                # stack, finally removing the old index value
+
+
+dup 3 rot +                     # Duplicate top fib number, then rotate by 3. Adding these together
+                                # we get the newest fib number. 
+
+dup 1 nprint                    # Duplicate the new fib number and print
+10 1 print                      # print a new line
+
+end                             # end of the while loop
+
+exit                            # end the program after 100 vals have been computed

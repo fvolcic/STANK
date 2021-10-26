@@ -31,15 +31,22 @@ class StaticStack:
             self.stack[self.stack_ptr - 1 - i] = self.stack[self.stack_ptr - 2 - i]
         self.stack[self.stack_ptr - depth] = tmp
 
+    def nswap(self, n):
+        tmp = self.top()
+        self.stack[self.stack_ptr - 1] = self.stack[self.stack_ptr - 1 - n]
+        self.stack[self.stack_ptr - n] = tmp
+
     def swap_top(self):
         tmp = self.top()
         self.stack[self.stack_ptr - 1] = self.stack[self.stack_ptr - 2]
         self.stack[self.stack_ptr - 2] = tmp
 
+    def getstack(self):
+        return self.stack[:self.size()]
 
 # Tokenize a file and return array of tokens without whitespace
 def tokenize(filename):
-    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'dup', 'rot','copy2top', 'pop', 'top', "swap"])
+    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','copy2top', 'pop', 'top', "swap", 'nswap'])
     tokens = []
     with open(filename, 'r') as f:
         for line in f:
@@ -195,6 +202,14 @@ class Program:
                     print(chr(val), end='')
 
             self.update_ip()
+            return
+
+        if(instr == "nprint"):
+            length = self.stack.pop()
+            for _ in range(length):
+                print(self.stack.pop(), end='')
+            self.update_ip()
+            return
 
         if(instr == "*"):
             self.stack.push(self.stack.pop() * self.stack.pop())
@@ -213,6 +228,11 @@ class Program:
         
         if(instr == "+"):
             self.stack.push(self.stack.pop() + self.stack.pop())
+            self.update_ip()
+            return
+
+        if(instr == "nswap"):
+            self.stack.nswap(self.stack.pop())
             self.update_ip()
             return
 
@@ -311,7 +331,7 @@ import click
 def main(filename):
     p = Program(tokenize(filename))
     while(1):
-        #print(p.stack.stack[:p.stack.size()])
+        # print(p.stack.stack[:p.stack.size()])
         p.run_instruction()
 
 if __name__ == "__main__":

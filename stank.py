@@ -52,7 +52,7 @@ class StaticStack:
 
 # Tokenize a file and return array of tokens without whitespace
 def tokenize(filename):
-    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','neg', 'top', "swap", 'nswap'])
+    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap'])
     tokens = []
     with open(filename, 'r') as f:
         for line in f:
@@ -248,6 +248,11 @@ class Program:
             self.update_ip()
             return
 
+        if(instr == "stacksize"):
+            self.stack.push(self.stack.size())
+            self.update_ip()
+            return
+
         if(instr == "nprint"):
             length = self.stack.pop()
             for _ in range(length):
@@ -385,10 +390,22 @@ import click
 
 @click.command()
 @click.argument('filename')
-def main(filename):
+@click.option('-sp', '--print-stack', 'print_stack', is_flag=True)
+@click.option('-v', '--verbose', 'verbose', is_flag=True)
+@click.option('-t', '--tokenize-file', 'tokenize_file', type=str, default=None)
+def main(filename, print_stack, verbose, tokenize_file):
+    if tokenize_file != None:
+        with open(tokenize_file, 'w') as f:
+            for token in tokenize(filename):
+                f.write(str(token) + ' ')
+        exit(0)
+
     p = Program(tokenize(filename), 1000)
     while(1):
-        # print(p.stack.stack[:p.stack.size()])
+        if verbose:
+            print(p.program[p.ip], end=' ')
+        if print_stack or verbose:
+            print(p.stack.getstack())
         p.run_instruction()
 
 if __name__ == "__main__":

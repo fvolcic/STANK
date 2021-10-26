@@ -31,6 +31,12 @@ class StaticStack:
             self.stack[self.stack_ptr - 1 - i] = self.stack[self.stack_ptr - 2 - i]
         self.stack[self.stack_ptr - depth] = tmp
 
+    def rrot(self, depth):
+        tmp = self.stack[self.stack_ptr - depth]
+        for i in reversed(range(depth - 1)):
+            self.stack[self.stack_ptr - 2 - i] = self.stack[self.stack_ptr - 1 - i]
+        self.stack[self.stack_ptr - 1] = tmp
+
     def nswap(self, n):
         tmp = self.top()
         self.stack[self.stack_ptr - 1] = self.stack[self.stack_ptr - 1 - n]
@@ -46,7 +52,7 @@ class StaticStack:
 
 # Tokenize a file and return array of tokens without whitespace
 def tokenize(filename):
-    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','copy2top', 'pop', 'top', "swap", 'nswap'])
+    valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','neg', 'top', "swap", 'nswap'])
     tokens = []
     with open(filename, 'r') as f:
         for line in f:
@@ -249,6 +255,11 @@ class Program:
             self.update_ip()
             return
 
+        if(instr == "rrot"):
+            self.stack.rrot(self.stack.pop())
+            self.update_ip()
+            return
+
         if(instr == "*"):
             self.stack.push(self.stack.pop() * self.stack.pop())
             self.update_ip()
@@ -280,7 +291,10 @@ class Program:
             return
 
         if(instr == "=="):
-            self.stack.push(self.stack.pop() == self.stack.pop())
+            if(self.stack.pop() == self.stack.pop()):
+                self.stack.push(1)
+            else:
+                self.stack.push(0)
             self.update_ip()
             return
 
@@ -294,6 +308,15 @@ class Program:
             self.update_ip()
             return
         
+        if(instr == "neg"):
+            val = self.stack.pop()
+            if val != 0:
+                self.stack.push(0)
+            else:
+                self.stack.push(1)
+            self.update_ip()
+            return
+
         if(instr == "exit"):
             exit(self.stack.pop())
 
@@ -363,7 +386,7 @@ import click
 @click.command()
 @click.argument('filename')
 def main(filename):
-    p = Program(tokenize(filename), 10)
+    p = Program(tokenize(filename), 1000)
     while(1):
         # print(p.stack.stack[:p.stack.size()])
         p.run_instruction()

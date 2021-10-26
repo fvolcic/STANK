@@ -1,0 +1,46 @@
+# Program which checks if the following word is a valid palindrome
+'etttte' 
+
+dup 2 swap / swap 
+
+# (..WORD..) (length / 2) (length)
+if dup 2 swap % 0 == do #if length is even
+
+while 1 do
+
+dup 2 + rrot
+
+# (..WORD..[1:]) (length / 2) (length) (WORD[1]) 
+
+4 rrot 
+
+# (..WORD..[1:-1]) (length / 2) (length) (WORD[1]) (WORD[-1])
+
+if == neg do
+10 'Not a palindrome!' 1 + print
+1 exit
+end
+
+# (..WORD..[1:-1]) (length / 2) (length)
+
+2 swap - 
+
+# (..WORD..[1:-1]) (length / 2) (length - 2)
+
+dup 3 copy2top 
+
+if == do 
+
+4 rrot 4 rrot
+if == neg do
+10 'not a palindrome!' 1 + print
+1 exit
+end
+
+10 'palindrome!' 1 + print
+0 exit
+end
+
+end
+end
+1 exit

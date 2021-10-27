@@ -1,0 +1,93 @@
+
+# This is a quick proof that STANK is a turing complete language
+#
+# To prove that STANK is turing complete, we must show a turing machine can simulate STANK and
+# then show that STANK can simulate a turing machine.
+# 
+# Step 1: Prove a turing machine can simulate STANK. STANK is currently being run on a turing machine,
+#         therefore, STANK can be simulated by a turing machine.
+#
+# Step 2: Prove STANK can simulate a turing machine.
+#         
+#         To prove this, we will need a couple of tools. 
+#         Will will need a way to represent states, and we will need
+#         a way to represent that tape along with writes and left + right moves.
+#        
+#         Tape Head: The head of the tape points at the bottom of the stack. This sounds weird, but it
+#                    makes it easy to deal with arbietrary length tapes. 
+#
+#         To create a state, simply define a state label, such as 'state1:'.
+#         Once you have this, we need to read the tape.
+#         To read the tape, we write "0 stacksize 1 swap - nswap"
+#         This places the bottom element of the stack ontop of the stack,
+#         and places a value of 0 at the bottom of the stack temporarily. 
+#         Now that you have the value, create if blocks to determine what state to go to next.
+#         To go to that state, we write "state(n)! goto". That will take up to the state.
+#         Before that, we must write a value back to the tape. We pick which value we would like to add
+#         Call that value V. We then write "pop V stacksize 1 swap - nswap pop"
+#         This will place the element back at the bottom of the stack, and restore the rest of the stack. 
+#         Next, we must pick a right or left move.
+#         A right move is a rotation. We do "stacksize rot" to get a right rotation.
+#         A left move is a reverse rotation. We write "stacksizez rrot" to get a left rotation.
+#         We then go to our next state with "state(n)! goto"
+#         Any state can HALT with the exit token.
+#
+#         To load the tape, find the "loadtape:" label. 
+#
+#         Thus, we may conclude that STANK is turing complete. :)
+
+#         ---------------------------------------------------------------------
+#         Below is an example of a turing machine calculates if there is an even number of 1s on the tape.
+#         It prints the result, but could have easily outputted the result on the tape, but this is more visual.
+#         The 1000 on the tape acts as our "blank symbol"
+
+
+start! goto
+
+# Example program only takes an even number of 1's
+state1:
+
+    0 stacksize 1 swap - nswap
+
+    if dup 1000 == do
+        10 'HALT - even number of 1s' 1 + print
+        0 exit
+    end
+
+    if dup 1 == do
+        stacksize 1 swap - nswap pop
+        stacksize rrot
+        state2! goto
+    end
+
+    stacksize 1 swap - nswap pop 
+    stacksize rrot
+    state1! goto
+
+state2:
+
+    0 stacksize 1 swap - nswap
+
+    if dup 1000 == do
+        10 'HALT - odd number of 1s' 1 + print
+        1 exit
+    end
+
+    if dup 1 == do
+        stacksize 1 swap - nswap pop
+        stacksize rrot
+        state1! goto
+    end
+
+    stacksize 1 swap - nswap pop
+    stacksize rrot
+    state2! goto
+
+# Where the program execution will start
+start:
+    loadtape! goto
+
+
+loadtape:
+1 0 1 0 1 0 1 1 0 1 1 1000
+state1! goto

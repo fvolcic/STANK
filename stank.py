@@ -40,7 +40,7 @@ class StaticStack:
     def nswap(self, n):
         tmp = self.top()
         self.stack[self.stack_ptr - 1] = self.stack[self.stack_ptr - 1 - n]
-        self.stack[self.stack_ptr - n] = tmp
+        self.stack[self.stack_ptr - 1 - n] = tmp
 
     def swap_top(self):
         tmp = self.top()
@@ -53,7 +53,9 @@ class StaticStack:
 # Tokenize a file and return array of tokens without whitespace
 def tokenize(filename):
     valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap'])
+    labels = {}
     tokens = []
+    
     with open(filename, 'r') as f:
         for line in f:
             line = line.lstrip().rstrip().replace('\n','')
@@ -111,6 +113,12 @@ def tokenize(filename):
                         except ValueError:
                             tokens.append(float(token))
 
+                    elif token[-1] == "!":
+                        tokens.append(token)
+
+                    elif token[-1] == ":":
+                        tokens.append(token)
+
                     elif token in valid_tokens_non_numeric:
                         tokens.append(token)
                     else:
@@ -120,7 +128,32 @@ def tokenize(filename):
                     # tokens.append(line[token_start:token_end])
                     token_start=token_end
 
-    return tokens
+
+    labels = {}
+    num_labels = 0
+    for i,token in enumerate(tokens) :
+        if type(token) != str:
+            continue
+        if token[-1] == ":":
+            num_labels+=1
+        
+            labels[token[:-1]] = i - num_labels + 1
+
+    tokens_new = []
+
+    for token in tokens:
+        if type(token) != str:
+            tokens_new.append(token)
+            continue
+        if token[-1] == ":":
+            continue
+
+        if token[-1] == "!":
+            tokens_new.append( labels[token[:-1]] )
+        else:
+            tokens_new.append(token)
+    
+    return tokens_new
 
 class Program:
 
@@ -170,6 +203,7 @@ class Program:
                 count += 1
             if(self.program[index] == "if" or self.program[index] == "while"):
                 count -= 1
+            index -= 1
         return index           
 
     def update_ip(self):
@@ -198,6 +232,8 @@ class Program:
 
         elif(instr == "goto"):
             where = self.stack.pop()
+            current = self.ip
+            where = where - current
             if(where == 0):
                 return
             if(where > 0):

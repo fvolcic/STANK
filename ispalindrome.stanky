@@ -1,6 +1,8 @@
 0
 while 1 do
 1 +
+
+    # All the different sentences to test if they are palindrome's
     if dup 1 == do # palindrome
     'this is not a palindrome' pop 'this is not a palindrome'r 2 *
     end
@@ -11,13 +13,14 @@ while 1 do
     'this is not a palindrome'
     end
     if dup 4 == do # palindrome
-    'Arewenotdrawnonwardwefewdrawnonwardtonewera'
+    'A tiger regit A'
     end
     if dup 5 == do
     10 'Thanks for using the stanky palindrome checker!' 10 swap 2 + print
     0 exit
     end
 
+# The actual algorithm which tests for a palindrome
 while dup 1 < do
 
     dup 1 + rrot 
@@ -25,17 +28,16 @@ while dup 1 < do
 
     if neg do
         10 'Not a palindrome!' 1 + print
-        22 goto
+        reduce! goto
     end
 
     2 swap -
 
 end
 
-
-
 10 'Palindrome!' 1 + print
 
+reduce:
 while stacksize 1 == neg do
     pop
 end

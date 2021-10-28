@@ -18,7 +18,7 @@ CSTANK - implement STANK in C
 SELFSTANK - make STANK self hosted by making STANK compilable then a compiler for STANK in STANK
 
 OTHER:
-language kinda trash (BUT IT IS TURING COMPLETE!! If you want the proof, see turing.stanky). If you need to use a stack based language for whatever reason, just use C and make a statically allocated array and an index. Or C++.
+language kinda trash. It is turing complete (turing.stanky), but that is not technically useful. If you need to use a stack based language for whatever reason, just use C and make a statically allocated array and an index. Or C++.
 
 The python interpreter is incredibly slow as of now. 
 (If you are just messing around, it will seem super fast),

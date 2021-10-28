@@ -253,6 +253,8 @@ class Program:
                     if(self.program[self.ip] in ["where", "if"]):
                         self.op_stack.pop()
                     self.ip -= 1
+                if(self.program[self.ip] in ["where", "if"]):
+                    self.op_stack.pop()
                 return
 
         else:
@@ -427,21 +429,25 @@ import click
 @click.command()
 @click.argument('filename')
 @click.option('-sp', '--print-stack', 'print_stack', is_flag=True)
+@click.option('-osp', '--print-op-stack', is_flag=True)
+@click.option('-ss', '--stack-size', type=int, default=1000)
 @click.option('-v', '--verbose', 'verbose', is_flag=True)
 @click.option('-t', '--tokenize-file', 'tokenize_file', type=str, default=None)
-def main(filename, print_stack, verbose, tokenize_file):
+def main(filename, print_stack,print_op_stack,verbose, tokenize_file, stack_size):
     if tokenize_file != None:
         with open(tokenize_file, 'w') as f:
             for token in tokenize(filename):
                 f.write(str(token) + ' ')
         exit(0)
 
-    p = Program(tokenize(filename), 1000)
+    p = Program(tokenize(filename), stack_size)
     while(1):
         if verbose:
             print(p.program[p.ip], end=' ')
         if print_stack or verbose:
             print(p.stack.getstack())
+        if print_op_stack:
+            print(p.op_stack.getstack())
         p.run_instruction()
 
 if __name__ == "__main__":

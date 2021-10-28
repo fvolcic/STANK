@@ -1,0 +1,51 @@
+# Merge sort stanky implementation
+loadtape! goto
+
+start:
+
+    if dup -1000 == do
+        if stacksize copy2top 1 == do
+            pop
+            
+            top:
+            if stacksize 2 == neg do
+                1 nprint ' ' print
+            end
+            if stacksize 2 == do
+            10 1 print
+            1 exit
+            end
+            top! goto
+
+            10 1 print
+            0 exit
+        end
+        1 stacksize 1 swap - nswap pop
+        stacksize 1 swap - rot
+    end
+
+    if 2 copy2top dup -1000 == neg do
+        if 2 copy2top > do
+            swap
+            0 stacksize 1 swap - nswap pop
+        end
+
+        if 2 copy2top 2 copy2top < do
+            stacksize 1 swap - rot
+        end
+
+        if 2 copy2top 2 copy2top == do
+            stacksize 1 swap - rot
+        end
+
+    end
+    
+    if 2 copy2top -1000 == do
+        stacksize 1 swap - rot
+    end
+
+    start! goto
+
+loadtape:
+1 -1000 322 602 369 715 862 381 190 485 172 836 948 245 886 304 682 393 972 899 309 316 95 880 627 123 657 821 936 337 577 35 42 480 587 216 88 501 601 777 462 11 689 314 401 16 81 328 918 294 775 343 913 773 989 335 327 721 214 463 687 655 432 565 811 944 897 725 368 500 104 609 333 291 675 85 159 487 292 945 989 952 811 242 545 122 5 181 274 434 332 226 909 254 359 463 498 787 45 835 84 216 
+start! goto

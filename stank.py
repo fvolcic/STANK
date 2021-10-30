@@ -51,7 +51,7 @@ class StaticStack:
         return self.stack[:self.size()]
 
 # Tokenize a file and return array of tokens without whitespace
-def tokenize(filename):
+def tokenize(filename, for_compile = False):
     valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap'])
     labels = {}
     tokens = []
@@ -114,7 +114,10 @@ def tokenize(filename):
                             tokens.append(float(token))
 
                     elif token[-1] == "!":
-                        tokens.append(token)
+                        if for_compile:
+                            tokens.append(token[:-1])
+                        else:
+                            tokens.append(token)
 
                     elif token[-1] == ":":
                         tokens.append(token)
@@ -128,6 +131,13 @@ def tokenize(filename):
                     # tokens.append(line[token_start:token_end])
                     token_start=token_end
 
+    if for_compile:
+
+        for i in range(len(tokens)):
+            if tokens[i] == 'goto':
+                tokens[i] = tokens[i-1]
+                tokens[i-1] = 'goto'
+        return tokens
 
     labels = {}
     num_labels = 0
@@ -424,22 +434,89 @@ class Program:
             self.update_ip()
             return
 
+def gen_func_decls(tokens):
+    decls = []
+
+    for token in tokens:
+        if token in ["while", "do"]:
+            decls.append(f"bool conditional{len(decls)}()")
+
+def compile_token(token):
+    if token == "goto":
+        return "goto"
+    elif token == "pop":
+        return "pop()"
+    elif token == "dup":
+        return "dup()"
+    elif token == "rot":
+        return "rot()"
+    elif token == "rrot()":
+        return "rrot()"
+    elif token == "+":
+        return "plus()"
+    elif token == "-":
+        return "minus()"
+    elif token == "*":
+        return "times()"
+    elif token == "/":
+        return "divide()"
+    elif token == "stacksize":
+        return "stacksize()"
+    elif token == "exit":
+        return "exit()"
+
+def output_boilerplate(fp, headers, program_size=1000):
+    fp.print("#include <stdio.h>")
+
+    for header in headers:
+        fp.print(header)
+        fp.print(";\n")
+    
+    fp.print(f"#define PROGRAM_STACK_SIZE {program_size}")
+
+    with open("stankbase.c", 'r') as f:
+        for line in f:
+            fp.print(line)
+
+# outputs a C stank file that can be run
+def generate_c(input_file, output_file):
+    tokens = tokenize(input_file, True) # Program is only valid if it can be tokenized.
+    
+    headers = gen_func_decls(tokens)
+
+    output_boilerplate()
+
+    # maps a function name to the function represented as a string.
+    functions = {}
+    num_funcs = 0
+    with open(output_file, 'w') as f:
+        for token in tokens:
+            if not token in ["if", "while"]:
+                f.write(compile_token(token)+";\n")
+    
+
 import click
 
 @click.command()
 @click.argument('filename')
+@click.option('-c', '--com', is_flag=True)
+@click.option('-o', '--output', type=str, default=None)
 @click.option('-sp', '--print-stack', 'print_stack', is_flag=True)
 @click.option('-osp', '--print-op-stack', is_flag=True)
 @click.option('-ss', '--stack-size', type=int, default=1000)
 @click.option('-v', '--verbose', 'verbose', is_flag=True)
 @click.option('-t', '--tokenize-file', 'tokenize_file', type=str, default=None)
-def main(filename, print_stack,print_op_stack,verbose, tokenize_file, stack_size):
-    if tokenize_file != None:
-        with open(tokenize_file, 'w') as f:
-            for token in tokenize(filename):
-                f.write(str(token) + ' ')
+def main(filename, print_stack,print_op_stack,verbose, tokenize_file, stack_size, com, output):
+    
+    if output != None and com:
+        generate_c(filename, output+".stanky.c")
         exit(0)
 
+    if tokenize_file != None:
+        with open(tokenize_file, 'w') as f:
+            for token in tokenize(filename, com):
+                f.write(str(token) + '\n')
+        exit(0)
     p = Program(tokenize(filename), stack_size)
     while(1):
         if verbose:

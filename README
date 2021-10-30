@@ -2,6 +2,14 @@ Implementation of the STANK programming language.
 
 Why STANK? (ST)ack based L(AN)guage that suc(K)s
 
+What is STANK?
+----------------
+STANK is a turing complete stack-based programming language. 
+STANK programs can be both interpreted and compiled.
+To interpret stank, use python3 stank.py <inputfile>
+To compile stank, use python3 stank_compiler.py <inputfile> -o <outputfile> -ps <stacksize>
+
+More:
 I do not recommend torturing yourself by trying to use STANK. Unless you want to write a STANK
 compiler in STANK to make the language self-hosted. That would be nice.
 
@@ -11,11 +19,8 @@ running $python3 stank.py Docs.stanky
 You need python 3 and the click library for the program to run properly
 
 TODO: 
-goto - implement the goto token
 elif - implement the else if token
 else - implement the else token
-CSTANK - implement STANK in C
-SELFSTANK - make STANK self hosted by making STANK compilable then a compiler for STANK in STANK
 
 OTHER:
 language kinda trash. It is turing complete (turing.stanky), but that is not technically useful. If you need to use a stack based language for whatever reason, just use C and make a statically allocated array and an index. Or C++.

@@ -1,11 +1,11 @@
 0 1 1
-while 3 copy2top dup 10 > do
-1 + 4 nswap pop
-dup
-3 rot
+while stacksize copy2top dup 30 > do
+1 +
+stacksize 1 swap - nswap pop
+dup 3 rot
 +
 dup
 1 nprint
 10 1 print
 end
-exit
+0 exit

@@ -253,17 +253,17 @@ def main(filename, output, program_size, get_c):
     end = timeit.timeit()
 
     if get_c:
-        print(bcolors.BOLD + bcolors.OKGREEN + "Successfully " + \
-            bcolors.ENDC + f"generated C output file {output+'.tmp.c'} \
-                in {end - start:.2f} seconds!")
+        print(bcolors.BOLD + bcolors.OKGREEN + "\nC Generation Successful!" + bcolors.ENDC)
+        print( f"Output written to "+bcolors.BOLD+ f"{output+'.tmp.c'}" +bcolors.ENDC)
+        print( f"Compliation took {end - start:.2f} seconds.\n")
         exit(0)
 
-    os.system(f"gcc {output+'.tmp.c'} -o {output}")
+    os.system(f"gcc {output+'.tmp.c'} -o3 -o {output}")
     os.system(f"rm {output+'.tmp.c'}")
 
     end = timeit.timeit()
     print(bcolors.BOLD + bcolors.OKGREEN + "\nCompliation Successful!" + bcolors.ENDC)
-    print( f"Output written to {output}" )
+    print( f"Output written to "+bcolors.BOLD+ f"{output}" +bcolors.ENDC)
     print( f"Compliation took {end - start:.2f} seconds.\n")
 
 if __name__ == "__main__":

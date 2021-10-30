@@ -8,6 +8,7 @@ STANK is a turing complete stack-based programming language.
 STANK programs can be both interpreted and compiled.
 To interpret stank, use python3 stank.py <inputfile>
 To compile stank, use python3 stank_compiler.py <inputfile> -o <outputfile> -ps <stacksize>
+Compiling STANK seems to make the programs about 10x as fast.
 
 More:
 I do not recommend torturing yourself by trying to use STANK. Unless you want to write a STANK

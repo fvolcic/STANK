@@ -1,12 +1,23 @@
-proc @print_with_newline
-print 10 1 print
-end
-
-proc @nprint_with_newline
-nprint 10 1 print
-end
+# forward declerations
+proc @print_with_newline end
+proc @nprint_with_newline end
+proc @newline end
 
 'test' @print_with_newline
 5 1 @nprint_with_newline
-
+@newline
+@newline
 1 exit
+
+# definitions
+proc @print_with_newline
+print @newline
+end
+
+proc @nprint_with_newline
+nprint @newline
+end
+
+proc @newline 
+10 1 print
+end

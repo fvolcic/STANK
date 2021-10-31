@@ -1,11 +1,12 @@
 import os
-import timeit
+import subprocess
+from datetime import datetime
 
 import click
 
-valid_tokens_non_numeric = set(['+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap'])
+valid_tokens_non_numeric = set(['<-','@','|', '&', 'and', 'or','+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap', 'new', 'delete', 'print_stack'])
 
-def tokenize(filename, for_compile = False):
+def tokenize(filename, stack_print = False):
     global valid_tokens_non_numeric
     labels = {}
     tokens = []
@@ -68,10 +69,7 @@ def tokenize(filename, for_compile = False):
                             tokens.append(float(token))
 
                     elif token[-1] == "!":
-                        if for_compile:
-                            tokens.append(token[:-1])
-                        else:
-                            tokens.append(token)
+                        tokens.append(token[:-1])
 
                     elif token[-1] == ":":
                         tokens.append(token)
@@ -89,6 +87,11 @@ def tokenize(filename, for_compile = False):
         if tokens[i] == 'goto':
             tokens[i] = tokens[i-1]
             tokens[i-1] = 'goto'
+    
+    # Returns a special program which will print the stack
+    if(stack_print):
+        return [val for tup in zip(tokens, ['print_stack' for _ in range(len(tokens))]) for val in tup]
+
     return tokens
 
 def is_operator(token):
@@ -101,7 +104,12 @@ def is_operator(token):
         '>':"gt()",
         '<=':"le()",
         '>=':"ge()",
-        '==':"eq()"
+        '==':"eq()",
+        '|':"bit_or()",
+        '&':"bit_and()",
+        '%':"mod()",
+        '@':"read_ptr()",
+        '<-':"store_ptr()"
     }
 
     if token not in operators.keys():
@@ -241,30 +249,27 @@ class bcolors:
 @click.option("-o", "--output", default="stank.out")
 @click.option("-ps", "--program-size", type=int, default=100)
 @click.option("-c", "--get-c", is_flag = True)
-def main(filename, output, program_size, get_c):
-
-    start = timeit.timeit()
+@click.option("--gcc-options", default="-g3")
+@click.option("-sp", "--stack-print", is_flag=True)
+def main(filename, output, program_size, get_c, gcc_options, stack_print):
 
     with open(output+".tmp.c", 'w') as fout:
-        generator = file_generator(tokenize(filename, True), fout, program_size)
-
+        generator = file_generator(tokenize(filename, stack_print), fout, program_size)
         generator.generate()
-
-    end = timeit.timeit()
 
     if get_c:
         print(bcolors.BOLD + bcolors.OKGREEN + "\nC Generation Successful!" + bcolors.ENDC)
         print( f"Output written to "+bcolors.BOLD+ f"{output+'.tmp.c'}" +bcolors.ENDC)
-        print( f"Compliation took {end - start:.2f} seconds.\n")
+        print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
         exit(0)
 
-    os.system(f"gcc {output+'.tmp.c'} -o3 -o {output}")
+    subprocess.run(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #os.system(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}")
     os.system(f"rm {output+'.tmp.c'}")
 
-    end = timeit.timeit()
     print(bcolors.BOLD + bcolors.OKGREEN + "\nCompliation Successful!" + bcolors.ENDC)
     print( f"Output written to "+bcolors.BOLD+ f"{output}" +bcolors.ENDC)
-    print( f"Compliation took {end - start:.2f} seconds.\n")
+    print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
 
 if __name__ == "__main__":
     main()

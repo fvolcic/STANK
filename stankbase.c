@@ -141,11 +141,12 @@ void delete(){
 }
 
 void read_ptr(){
-    push( *(int*) pop() );
+    push( *(long*) pop() );
 }
 
 void store_ptr(){
-    * ((int*) pop()) = pop();
+    long long * mem = (long*)pop();
+    * mem = pop();
 }
 
 void stack_nprint(){

@@ -1,0 +1,12 @@
+proc @print_with_newline
+print 10 1 print
+end
+
+proc @nprint_with_newline
+nprint 10 1 print
+end
+
+'test' @print_with_newline
+5 1 @nprint_with_newline
+
+1 exit

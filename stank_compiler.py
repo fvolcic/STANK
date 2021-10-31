@@ -4,11 +4,10 @@ from datetime import datetime
 
 import click
 
-valid_tokens_non_numeric = set(['<-','@','|', '&', 'and', 'or','+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap', 'new', 'delete', 'print_stack'])
+valid_tokens_non_numeric = set(['->','@','|', '&', 'and', 'or','+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap', 'new', 'delete', 'print_stack', 'proc'])
 
 def tokenize(filename, stack_print = False):
     global valid_tokens_non_numeric
-    labels = {}
     tokens = []
     
     with open(filename, 'r') as f:
@@ -74,6 +73,9 @@ def tokenize(filename, stack_print = False):
                     elif token[-1] == ":":
                         tokens.append(token)
 
+                    elif token[0] == "@" and len(token) != 1:
+                        tokens.append(token[1:])
+
                     elif token in valid_tokens_non_numeric:
                         tokens.append(token)
                     else:
@@ -90,7 +92,10 @@ def tokenize(filename, stack_print = False):
     
     # Returns a special program which will print the stack
     if(stack_print):
-        return [val for tup in zip(tokens, ['print_stack' for _ in range(len(tokens))]) for val in tup]
+        return [val for tup in zip(tokens,\
+             ['print_stack' for _ in range(len(tokens))]\
+                ) \
+                 for val in tup]
 
     return tokens
 
@@ -109,7 +114,7 @@ def is_operator(token):
         '&':"bit_and()",
         '%':"mod()",
         '@':"read_ptr()",
-        '<-':"store_ptr()"
+        '->':"store_ptr()"
     }
 
     if token not in operators.keys():
@@ -162,14 +167,22 @@ class file_generator:
         self.functions = {}
         self.num_functions = 0
     
+        self.procedures = {}
+
     def generate_output(self):
         output_string = ""
         if self.tokens[self.index] not in valid_tokens_non_numeric and type(self.tokens[self.index]) == str:
+            
+            if self.tokens[self.index] in self.procedures.keys():
+                output_string += f"{self.tokens[self.index]}_procedure();\n"
+                self.index += 1
+                return output_string
+
             output_string+=(self.tokens[self.index] + "\n")
             self.index += 1
             return output_string
 
-        if self.tokens[self.index] not in ["if", "while", "goto"]:
+        if self.tokens[self.index] not in ["if", "while", "goto", "proc"]:
             output_string+=(token_to_c(self.tokens[self.index])+";\n")
             self.index += 1
             return output_string
@@ -178,11 +191,29 @@ class file_generator:
             output_string += self.parse_conditional()
             return output_string
 
+        elif self.tokens[self.index] == "proc":
+            self.parse_proc()
+            return ""
+
         elif self.tokens[self.index] == "goto":
             output_string+=(f"goto {self.tokens[self.index + 1]};\n")
             self.index += 2
             return output_string
 
+    def parse_proc(self):
+
+        proc_name = f"{self.tokens[self.index+1]}"
+        self.procedures[proc_name] = f"\nvoid {proc_name}_procedure(){{\n"
+
+        self.index += 2
+
+        while self.tokens[self.index] != 'end':
+            if self.tokens[self.index] in ["while", "if"]:
+                self.procedures[proc_name] += self.parse_conditional()
+            else:
+                self.procedures[proc_name] += self.generate_output()
+        self.procedures[proc_name] += '}'
+        self.index += 1
 
 
     def place_next_statement(self):        
@@ -192,6 +223,11 @@ class file_generator:
         self.outfile.write("\n\n//CONDITIONAL FUNCTIONS\n")
         for func in self.functions:
             self.outfile.write(self.functions[func])
+
+    def place_procs(self):
+        self.outfile.write("\n\n//PROC FUNCTIONS\n")
+        for proc in self.procedures:
+            self.outfile.write(self.procedures[proc])
 
     # return a string that represents the literal
     def parse_conditional(self):
@@ -220,10 +256,12 @@ class file_generator:
 
     def generate_function_headers(self):
         num_funcs = 0
-        for token in self.tokens:
+        for i, token in enumerate(self.tokens):
             if token in ["if", "while"]:
                 self.outfile.write(f"int conditional{num_funcs}();\n")
                 num_funcs += 1
+            if token == "proc":
+                self.outfile.write(f"void {self.tokens[i + 1]}_procedure();\n")
 
     def generate(self):
         setup_file(self.outfile, self.program_size)
@@ -232,6 +270,7 @@ class file_generator:
         self.generate_statements()
         close_main(self.outfile)
         self.place_functions()
+        self.place_procs()
 
 class bcolors:
     HEADER = '\033[95m'

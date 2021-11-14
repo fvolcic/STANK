@@ -1,0 +1,32 @@
+
+# forward declerations
+
+# Fill stack with values from 0 to final value
+proc @iota end
+proc @reverse_iota end
+
+# get the index of the last stack
+proc @get_final_stack_index end
+
+start! goto 
+
+start:
+    10 add_stack
+    
+    5 0 iota
+
+proc @get_final_stack_index
+    1 numstacks - 
+end
+
+proc @iota 
+    2 add_stack
+    curstack
+    @get_final_stack_index
+    copy2stack
+    
+    
+    
+    pop
+
+    

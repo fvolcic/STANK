@@ -4,15 +4,23 @@ from datetime import datetime
 
 import click
 
-valid_tokens_non_numeric = set(['->','@','|', '&', 'and', 'or','+', '/', '*', '-', '<', '>', '<=', '>=', '==','%', 'while', 'if', 'elif', 'else', 'do', 'goto', 'end', 'exit', 'print', 'nprint', 'dup', 'rot','rrot', 'copy2top', 'pop','stacksize','neg', 'top', "swap", 'nswap', 'new', 'delete', 'print_stack', 'proc'])
+valid_tokens_non_numeric = set(['->', '@', '|', '&', 'and', 'or', '+', '/', '*', 
+                                '-', '<', '>', '<=', '>=', '==', '%', 'while', 
+                                'if', 'elif', 'else', 'do', 'goto',
+                               'end', 'exit', 'print', 'nprint', 'dup', 'rot', 
+                               'rrot', 'copy2top', 'pop', 'stacksize', 'neg', 
+                               'top', "swap", 'nswap', 'new', 'delete', 'print_stack', 
+                               'proc', 'copy2stack', 'copyfromstack', 'sps', 'add_stack', 
+                               'remove_stack', 'numstacks', 'copy2D', 'curstack'])
 
-def tokenize(filename, stack_print = False):
+
+def tokenize(filename, stack_print=False):
     global valid_tokens_non_numeric
     tokens = []
-    
+
     with open(filename, 'r') as f:
         for line in f:
-            line = line.lstrip().rstrip().replace('\n','')
+            line = line.lstrip().rstrip().replace('\n', '')
             line += ' '
             token_start = 0
             token_end = 0
@@ -21,9 +29,9 @@ def tokenize(filename, stack_print = False):
 
             while(token_start < len(line)):
                 while(token_start < len(line) and token_start == token_end and line[token_start] == ' '):
-                    token_start+=1
-                    token_end+=1
-                
+                    token_start += 1
+                    token_end += 1
+
                 if(token_start == len(line)):
                     continue
 
@@ -36,9 +44,9 @@ def tokenize(filename, stack_print = False):
                     reverse = False
                     token_end += 1
                     while(line[token_end] != "'"):
-                        token_end+=1
+                        token_end += 1
                     if(line[token_end + 1] == 'r'):
-                        token_end+=1
+                        token_end += 1
                         reverse = True
                     if reverse:
                         token_whole = line[token_start+1:token_end-1]
@@ -83,44 +91,45 @@ def tokenize(filename, stack_print = False):
                         exit(1)
 
                     # tokens.append(line[token_start:token_end])
-                    token_start=token_end
+                    token_start = token_end
 
     for i in range(len(tokens)):
         if tokens[i] == 'goto':
             tokens[i] = tokens[i-1]
             tokens[i-1] = 'goto'
-    
+
     # Returns a special program which will print the stack
     if(stack_print):
-        return [val for tup in zip(tokens,\
-             ['print_stack' for _ in range(len(tokens))]\
-                ) \
-                 for val in tup]
+        return [val for tup in zip(tokens,
+                                   ['print_stack' for _ in range(len(tokens))]
+                                   )
+                for val in tup]
 
     return tokens
 
+
 def is_operator(token):
     operators = {
-        '+':"plus()",
-        '-':"minus()",
-        '*':"times()",
-        '/':"divide()",
-        '<':"lt()",
-        '>':"gt()",
-        '<=':"le()",
-        '>=':"ge()",
-        '==':"eq()",
-        '|':"bit_or()",
-        '&':"bit_and()",
-        '%':"mod()",
-        '@':"read_ptr()",
-        '->':"store_ptr()"
+        '+': "plus()",
+        '-': "minus()",
+        '*': "times()",
+        '/': "divide()",
+        '<': "lt()",
+        '>': "gt()",
+        '<=': "le()",
+        '>=': "ge()",
+        '==': "eq()",
+        '|': "bit_or()",
+        '&': "bit_and()",
+        '%': "mod()",
+        '@': "read_ptr()",
+        '->': "store_ptr()"
     }
 
     if token not in operators.keys():
         return False
     return operators[token]
-    
+
 
 def token_to_c(token):
 
@@ -143,47 +152,52 @@ def token_to_c(token):
     return token + "()"
 
 # setup all the boilerplate for the compilable c file.
+
+
 def setup_file(fp, program_size=100):
     fp.write(f"#define PROGRAM_STACK_SIZE {program_size}\n")
     with open("stankbase.c", 'r') as f:
         for line in f:
             fp.write(line)
 
+
 def setup_main(fp):
-    fp.write("\n\n//MAIN DEFINITION\nint main(){\n")
+    fp.write("\n\n//MAIN DEFINITION\nint main(){\nsetup();\n")
+
 
 def close_main(fp):
     fp.write("}")
+
 
 class file_generator:
     def __init__(self, tokens, outfile, program_size):
         self.tokens = tokens
         self.index = 0
-        
+
         self.program_size = program_size
 
         self.outfile = outfile
 
         self.functions = {}
         self.num_functions = 0
-    
+
         self.procedures = {}
 
     def generate_output(self):
         output_string = ""
         if self.tokens[self.index] not in valid_tokens_non_numeric and type(self.tokens[self.index]) == str:
-            
+
             if self.tokens[self.index] in self.procedures.keys():
                 output_string += f"{self.tokens[self.index]}_procedure();\n"
                 self.index += 1
                 return output_string
 
-            output_string+=(self.tokens[self.index] + "\n")
+            output_string += (self.tokens[self.index] + "\n")
             self.index += 1
             return output_string
 
         if self.tokens[self.index] not in ["if", "while", "goto", "proc"]:
-            output_string+=(token_to_c(self.tokens[self.index])+";\n")
+            output_string += (token_to_c(self.tokens[self.index])+";\n")
             self.index += 1
             return output_string
 
@@ -196,7 +210,7 @@ class file_generator:
             return ""
 
         elif self.tokens[self.index] == "goto":
-            output_string+=(f"goto {self.tokens[self.index + 1]};\n")
+            output_string += (f"goto {self.tokens[self.index + 1]};\n")
             self.index += 2
             return output_string
 
@@ -215,8 +229,7 @@ class file_generator:
         self.procedures[proc_name] += '}'
         self.index += 1
 
-
-    def place_next_statement(self):        
+    def place_next_statement(self):
         self.outfile.write(self.generate_output())
 
     def place_functions(self):
@@ -232,17 +245,18 @@ class file_generator:
     # return a string that represents the literal
     def parse_conditional(self):
         conditional_name = f"conditional{self.num_functions}"
-        self.functions[conditional_name] = "int " +conditional_name + "(){\n"
-        out_conditional_string = self.tokens[self.index] + "(" + conditional_name + "()){"
+        self.functions[conditional_name] = "int " + conditional_name + "(){\n"
+        out_conditional_string = self.tokens[self.index] + \
+            "(" + conditional_name + "()){"
         self.num_functions += 1
         self.index += 1
-        
+
         while self.tokens[self.index] != "do":
             if self.tokens[self.index] in ["while", "if"]:
                 self.functions[conditional_name] += self.parse_conditional()
             else:
                 self.functions[conditional_name] += self.generate_output()
-        
+
         self.functions[conditional_name] += "return pop();\n}\n"
         self.index += 1
         return out_conditional_string
@@ -272,6 +286,7 @@ class file_generator:
         self.place_functions()
         self.place_procs()
 
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -283,32 +298,40 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 @click.command()
 @click.argument("filename")
 @click.option("-o", "--output", default="stank.out")
 @click.option("-ps", "--program-size", type=int, default=100)
-@click.option("-c", "--get-c", is_flag = True)
+@click.option("-c", "--get-c", is_flag=True)
 @click.option("--gcc-options", default="-g3")
 @click.option("-sp", "--stack-print", is_flag=True)
 def main(filename, output, program_size, get_c, gcc_options, stack_print):
 
     with open(output+".tmp.c", 'w') as fout:
-        generator = file_generator(tokenize(filename, stack_print), fout, program_size)
+        generator = file_generator(
+            tokenize(filename, stack_print), fout, program_size)
         generator.generate()
 
     if get_c:
-        print(bcolors.BOLD + bcolors.OKGREEN + "\nC Generation Successful!" + bcolors.ENDC)
-        print( f"Output written to "+bcolors.BOLD+ f"{output+'.tmp.c'}" +bcolors.ENDC)
-        print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
+        print(bcolors.BOLD + bcolors.OKGREEN +
+              "\nC Generation Successful!" + bcolors.ENDC)
+        print(f"Output written to "+bcolors.BOLD +
+              f"{output+'.tmp.c'}" + bcolors.ENDC)
+        print(
+            f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
         exit(0)
 
-    subprocess.run(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}",
+                   shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     #os.system(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}")
     os.system(f"rm {output+'.tmp.c'}")
 
-    print(bcolors.BOLD + bcolors.OKGREEN + "\nCompliation Successful!" + bcolors.ENDC)
-    print( f"Output written to "+bcolors.BOLD+ f"{output}" +bcolors.ENDC)
-    print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
+    print(bcolors.BOLD + bcolors.OKGREEN +
+          "\nCompliation Successful!" + bcolors.ENDC)
+    print(f"Output written to "+bcolors.BOLD + f"{output}" + bcolors.ENDC)
+    print(f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
+
 
 if __name__ == "__main__":
     main()

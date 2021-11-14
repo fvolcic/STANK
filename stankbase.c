@@ -1,8 +1,46 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-long long program_stack[PROGRAM_STACK_SIZE]; // static stack that is allocated.
+#define NUM_PROGRAM_STACKS_MAX 100
+
+#ifndef PROGRAM_STACK_SIZE
+#define PROGRAM_STACK_SIZE 100
+#endif
+
+long long * program_stack;//[PROGRAM_STACK_SIZE]; // static stack that is allocated.
 size_t sp = 0; // pointer to the program stack header.
+
+long long * program_stacks[NUM_PROGRAM_STACKS_MAX];
+size_t program_stacks_sp[NUM_PROGRAM_STACKS_MAX];
+size_t num_stacks = 1;
+size_t cur_stack = 0;
+
+long long pop();
+
+void add_stack(){
+    program_stacks[num_stacks] = (long long*)malloc((sizeof(long long) * pop()));
+    program_stacks_sp[num_stacks] = 0; 
+    ++num_stacks;
+}
+
+void remove_stack(){
+    free(program_stacks[num_stacks - 1]);
+    num_stacks -= 1; 
+}
+
+void set_program_stack(){
+    size_t new_stack = pop();
+    program_stacks_sp[cur_stack] = sp;
+    program_stack = program_stacks[new_stack];
+    sp = program_stacks_sp[new_stack]; 
+    cur_stack = new_stack; 
+}
+
+void setup(){
+    program_stack = (long long *) malloc( PROGRAM_STACK_SIZE * sizeof(long long)); 
+    program_stacks[0] = program_stack;
+    sp = program_stacks_sp[0];
+}
 
 long long top(){
     return program_stack[sp - 1];
@@ -172,4 +210,37 @@ void print_stack(){
     }
     printf("%llu", program_stack[sp - 1]);
     printf("]\n");
+}
+
+void sps(){
+    set_program_stack();
+}
+
+void copy2stack(){
+    size_t to_stack = pop();
+    long long val = pop();
+    push(val); 
+    program_stacks[to_stack][program_stacks_sp[to_stack]] = val; 
+    program_stacks_sp[to_stack] += 1; 
+
+}
+
+void copyfromstack(){
+    size_t from_stack = pop();
+    push(from_stack); 
+}
+
+void numstacks(){
+    push(num_stacks);
+}
+
+void copy2D(){
+    long long stack = pop();
+    long long depth = pop();
+
+    push(program_stacks[stack][program_stacks_sp[stack]-depth-1]); 
+}
+
+void curstack(){
+    push(cur_stack); 
 }

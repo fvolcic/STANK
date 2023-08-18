@@ -292,6 +292,8 @@ class bcolors:
 @click.option("-sp", "--stack-print", is_flag=True)
 def main(filename, output, program_size, get_c, gcc_options, stack_print):
 
+    start_time = datetime.now()
+
     with open(output+".tmp.c", 'w') as fout:
         generator = file_generator(tokenize(filename, stack_print), fout, program_size)
         generator.generate()
@@ -302,13 +304,25 @@ def main(filename, output, program_size, get_c, gcc_options, stack_print):
         print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
         exit(0)
 
-    subprocess.run(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    result = subprocess.run(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    end_time = datetime.now()
+
+    # check if the compilation was successful
+    if result.returncode != 0:
+        print(bcolors.BOLD + bcolors.FAIL + "\nCompliation Failed!" + bcolors.ENDC)
+        print( f"Output written to "+bcolors.BOLD+ f"{output+'.tmp.c'}" +bcolors.ENDC)
+        print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
+        print( f"Compilation took {((end_time - start_time).microseconds / 1000000) } seconds")
+        exit(1)
+
     #os.system(f"gcc {output+'.tmp.c'} {gcc_options} -o {output}")
     os.system(f"rm {output+'.tmp.c'}")
 
     print(bcolors.BOLD + bcolors.OKGREEN + "\nCompliation Successful!" + bcolors.ENDC)
     print( f"Output written to "+bcolors.BOLD+ f"{output}" +bcolors.ENDC)
     print( f"Compliation finished at {datetime.now().strftime('%H:%M:%S')}.\n")
+    print( f"Compilation took {(end_time - start_time).microseconds / 1000000} seconds")
 
 if __name__ == "__main__":
     main()

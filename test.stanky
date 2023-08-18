@@ -2,12 +2,14 @@
 proc @print_with_newline end
 proc @nprint_with_newline end
 proc @newline end
+proc @print_hello end
 
 'test' @print_with_newline
 5 1 @nprint_with_newline
 @newline
 @newline
-1 exit
+@print_hello
+@exit
 
 # definitions
 proc @print_with_newline
@@ -20,4 +22,13 @@ end
 
 proc @newline 
 10 1 print
+end
+
+proc @exit
+1 exit
+end
+
+proc @print_hello
+'hello!'
+@print_with_newline
 end
